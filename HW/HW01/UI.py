@@ -10,6 +10,11 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import os
+import qt5_applications
+dirname = os.path.dirname(qt5_applications.__file__)
+plugin_path = os.path.join(dirname, 'Qt', 'plugins', 'platforms')
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

@@ -34,5 +34,5 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
 class MyFigureCanvas(FigureCanvas):
-    pass        
+    pass
 
