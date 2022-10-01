@@ -33,7 +33,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def display_img(self, path, objectName):
         self.img = cv2.imread(path)
-        print("type==========================", type(self.img))
+        self.img = cv2.resize(self.img, (200,150))
+        # print("type==========================", type(self.img))
         height, width, channel = self.img.shape
         bytesPerline = 3 * width
         self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
@@ -68,5 +69,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         # show histogram
         plt.savefig("Matplotlib.jpg")
+        # mat = cv2.imread("Matplotlib.jpg")
+        # mat =
         self.display_img(path="Matplotlib.jpg", objectName="label_hist")
         os.remove("Matplotlib.jpg")
