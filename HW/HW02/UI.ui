@@ -17,14 +17,14 @@
    <widget class="QPushButton" name="button_file">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>40</y>
-      <width>75</width>
-      <height>23</height>
+      <x>20</x>
+      <y>60</y>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>choose img</string>
+     <string>2-1 choose img</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="show_file_path1">
@@ -62,19 +62,6 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="text">
      <string>img</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="img_show_button">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>80</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>show</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_hist">
@@ -379,7 +366,7 @@ p, li { white-space: pre-wrap; }
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_2_5_enlarge_2">
+   <widget class="QPushButton" name="button_2_6_brightness_an_contrast">
     <property name="geometry">
      <rect>
       <x>470</x>
