@@ -32,32 +32,11 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_2_5_shrink.clicked.connect(self.Q2_5_shrink)
         self.ui.button_2_6_brightness_an_contrast.clicked.connect(self.Q2_6_brightness_and_contrast)
 
-        # self.img_name = 'lena.jpg'
-        # self.display_img(path=self.img_name, objectName="label_img")
-        # self.plot_histogram(self.img)
-
-
-
-    # def display_img(self, img_name, objectName):
-        # if type(img_name) == str: # 路徑的話就做imread,否則直接使用
-        #     self.img = cv2.imread(img_name)
-        # elif type(img_name) == np.ndarray:
-        #      self.img = img_name
-
-        # self.img = cv2.resize(self.img, (200,150))
-        # height, width = self.img.shape[0], self.img.shape[1]
-        # bytesPerline = 3 * width
-        # self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-
-        # # choose what label is gonna to show img.
-        # if objectName == "label_img":
-        #     self.ui.label_img.setPixmap(QPixmap.fromImage(self.qimg))
-        # elif objectName == "label_hist":
-        #     self.ui.label_hist.setPixmap(QPixmap.fromImage(self.qimg))
+        self.ui.horizontalSlider_threshold.valueChanged.connect(self.getslidervalue)
 
 
     # plot histogram
-    def plot_histogram(self, img, objectName="1"):
+    def plot_histogram(self, img):
         self.hist = np.zeros(256)
         # 計算各數值數量並儲存
         for i in np.unique(img):
@@ -67,8 +46,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         plt.figure(figsize=(4,3))
         plt.bar(self.x_axis, self.hist)
         plt.title("Histogram")
-
-        # show histogram
         plt.savefig("Matplotlib.jpg")
         # self.display_img(img_name="Matplotlib.jpg", objectName=objectName)
         # os.remove("Matplotlib.jpg")
@@ -90,6 +67,10 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         return self.qimg
 
+
+    def getslidervalue(self):
+        self.value = self.ui.horizontalSlider.value()
+        pass
 
 
     def Q2_1_open_file(self):
@@ -125,31 +106,46 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 self.gray_A[i,n] = (int(self.R[i,n]) + int(self.G[i,n]) + int(self.B[i,n])) / 3.0
                 self.gray_B[i,n] = int(0.299 * int(self.R[i,n]) + 0.587 * int(self.G[i,n]) + 0.114 * int(self.B[i,n]))
 
-        print(self.img.shape)
-        print(self.gray_A.shape)
-        print(self.gray_B.shape)
-
+        self.diff = np.zeros_like(self.G)
+        for i in range(self.img.shape[0]):
+            for n in range(self.img.shape[1]):
+                if (int(self.gray_A[i,n]) - int(self.gray_B[i,n])) < 0:
+                    self.diff[i,n] = 0
+                else:
+                    self.diff[i,n] = int(self.gray_A[i,n]) - int(self.gray_B[i,n])
 
         # TODO 參考https://codeantenna.com/a/sZw8f2E1Ie 精簡化顯示照片
-        self.qimg1 = self.get_qimg(self.gray_A)
-        self.ui.label_img_2.setPixmap(QPixmap.fromImage(self.qimg1))
+        self.qimg = self.get_qimg(self.gray_A)
+        self.ui.label_img_2.setPixmap(QPixmap.fromImage(self.qimg))
 
-        print(type(self.qimg1))
+        self.qimg = self.get_qimg(self.gray_B)
+        self.ui.label_img_3.setPixmap(QPixmap.fromImage(self.qimg))
 
-        self.qimg2 = self.get_qimg(self.gray_B)
-        self.ui.label_img_3.setPixmap(QPixmap.fromImage(self.qimg2))
-
-        # self.plot_histogram(self.gray_A, 'label_hist_2')
-        # self.display_img(self.gray_B, "label_img_3")
-        # self.plot_histogram(self.gray_B, 'label_hist_3')
-
-### TODO check shape 位置
+        self.qimg = self.get_qimg(self.diff)
+        self.ui.label_img_4.setPixmap(QPixmap.fromImage(self.qimg))
 
 
     def Q2_3_histogram(self):
-        pass
+
+        self.plot_histogram(self.gray_A)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_2.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+
+        self.plot_histogram(self.gray_B)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_3.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+
+        self.plot_histogram(self.diff)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_4.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+
 
     def Q2_4_threshold(self):
+
+
         pass
 
     def Q2_5_enlarge(self):

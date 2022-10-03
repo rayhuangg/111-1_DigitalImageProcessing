@@ -13,14 +13,18 @@ G = img[:,:,1]
 B = img[:,:,2]
 gray_A = np.zeros_like(R) # 複製大小
 gray_B = np.zeros_like(R)
+diff = np.zeros_like(R)
 
 for i in range(img.shape[0]):
     for n in range(img.shape[1]):
         gray_A[i,n] = (int(R[i,n]) + int(G[i,n]) + int(B[i,n])) // 3
-        gray_B[i,n] = int(0.3 * int(R[i,n]) + 0.1 * int(G[i,n]) + 0.1 * int(B[i,n]))
+        gray_B[i,n] = int(0.299 * int(R[i,n]) + 0.587 * int(G[i,n]) + 0.114 * int(B[i,n]))
+        diff[i,n] = int(gray_A[i,n]) - int(gray_B[i,n])
 
-print(len(img.shape))
-print(len(R.shape))
+print(np.max(diff))
+
+# print(len(img.shape))
+# print(len(R.shape))
 
 
 # print(img.shape)
@@ -33,11 +37,11 @@ print(len(R.shape))
 
 # print(img.shape)
 
-# cv2.imshow('A', gray_A)
-# cv2.imshow('B', gray_B)
-# cv2.imshow('img', img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+cv2.imshow('A', gray_A)
+cv2.imshow('B', gray_B)
+cv2.imshow('img', img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 
 # img_name = '123'
