@@ -30,7 +30,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_2_4_threshold.clicked.connect(self.Q2_4_threshold)
         self.ui.button_2_5_enlarge.clicked.connect(self.Q2_5_enlarge)
         self.ui.button_2_5_shrink.clicked.connect(self.Q2_5_shrink)
-        self.ui.button_2_6_brightness_an_contrast.clicked.connect(self.Q2_6_brightness_and_contrast)
+        self.ui.button_2_6_brightness.clicked.connect(self.Q2_6_brightness)
+        self.ui.button_2_6_contrast.clicked.connect(self.Q2_6_contrast)
 
 
     # plot histogram
@@ -64,16 +65,11 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         return self.qimg
 
 
-    def getslidervalue(self):
-        self.value = self.ui.horizontalSlider.value()
-        pass
-
-
     def Q2_1_open_file(self):
         self.img_name, _ = QFileDialog.getOpenFileName(self,
                 "Open file",
                 "./")   # start path
-        # print(self.img_name)
+
         self.img_name = self.img_name.split("/")[-1] # 取檔案路徑最後一個分割，即為檔名
         self.ui.show_file_path1.setText(self.img_name) # show file path
 
@@ -94,23 +90,14 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.B = self.img[:,:,0]
         self.G = self.img[:,:,1]
         self.R = self.img[:,:,2]
-        self.gray_A = np.zeros_like(self.R) # 複製圖像大小
-        self.gray_B = np.zeros_like(self.G)
+        # self.gray_A = np.zeros_like(self.R) # 複製圖像大小
+        # self.gray_B = np.zeros_like(self.G)
 
-        for i in range(self.img.shape[0]):
-            for n in range(self.img.shape[1]):
-                self.gray_A[i,n] = (int(self.R[i,n]) + int(self.G[i,n]) + int(self.B[i,n])) // 3.0
-                self.gray_B[i,n] = int(0.299 * int(self.R[i,n]) + 0.587 * int(self.G[i,n]) + 0.114 * int(self.B[i,n]))
+        self.gray_A = np.array((self.R/3 + self.G/3 + self.B/3), dtype=np.uint8)
+        self.gray_B = np.array((0.299*(self.R) + 0.587*(self.G) + 0.114*(self.B)), dtype=np.uint8)
+        self.diff = self.gray_A-self.gray_B
 
-        self.diff = np.zeros_like(self.G)
-        for i in range(self.img.shape[0]):
-            for n in range(self.img.shape[1]):
-                if (int(self.gray_A[i,n]) - int(self.gray_B[i,n])) < 0:
-                    self.diff[i,n] = 0
-                else:
-                    self.diff[i,n] = int(self.gray_A[i,n]) - int(self.gray_B[i,n])
-
-        # TODO 參考https://codeantenna.com/a/sZw8f2E1Ie 精簡化顯示照片
+        # 參考 https://codeantenna.com/a/sZw8f2E1Ie 精簡化顯示照片
         self.qimg = self.get_qimg(self.gray_A)
         self.ui.label_img_2.setPixmap(QPixmap.fromImage(self.qimg))
 
@@ -161,35 +148,44 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def Q2_5_shrink(self):
         pass
 
-    def Q2_6_brightness_and_contrast(self):
+    def Q2_6_brightness(self):
         self.img = cv2.imread(self.img_name)
 
         # Get slider value
         self.brightness = self.ui.horizontalSlider_brightness.value()
         self.ui.label_brightness.setText(str(self.brightness))
-        self.contrast = self.ui.horizontalSlider_contrast.value()
-        self.ui.label_contrast.setText(str(self.contrast))
 
         # Adjust brightness
         # ref https://steam.oxxostudio.tw/category/python/ai/opencv-adjust.html
         self.brightness_img = self.img * 1.0 + self.brightness # 此處沒有*1.0就會出現奇怪顏色，包括*1也會，不確定原因
         self.brightness_img = np.uint8(np.clip(self.brightness_img, 0, 255)) # 避免溢位
 
-        # Adjust contrast
-        self.contrast_img = self.img * (self.contrast/127 + 1) - self.contrast
-        self.contrast_img = np.uint8(np.clip(self.contrast_img, 0, 255)) # 避免溢位
-
         self.qimg = self.get_qimg(self.brightness_img)
         self.ui.label_img_7.setPixmap(QPixmap.fromImage(self.qimg))
-        self.qimg = self.get_qimg(self.contrast_img)
-        self.ui.label_img_8.setPixmap(QPixmap.fromImage(self.qimg))
 
 
         self.plot_histogram(self.brightness_img)
         self.qimg = self.get_qimg('Matplotlib.jpg')
         self.ui.label_hist_7.setPixmap(QPixmap.fromImage(self.qimg))
         os.remove('Matplotlib.jpg')
-        self.plot_histogram(self.contrast_img)
-        self.qimg = self.get_qimg('Matplotlib.jpg')
-        self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
-        os.remove('Matplotlib.jpg')
+
+
+    def Q2_6_contrast(self):
+            self.img = cv2.imread(self.img_name)
+
+            # Get slider value
+            self.contrast = self.ui.horizontalSlider_contrast.value()
+            self.ui.label_contrast.setText(str(self.contrast))
+
+            # Adjust contrast
+            # ref https://steam.oxxostudio.tw/category/python/ai/opencv-adjust.html
+            self.contrast_img = self.img * (self.contrast/127 + 1) - self.contrast
+            self.contrast_img = np.uint8(np.clip(self.contrast_img, 0, 255)) # 避免溢位
+
+            self.qimg = self.get_qimg(self.contrast_img)
+            self.ui.label_img_8.setPixmap(QPixmap.fromImage(self.qimg))
+
+            self.plot_histogram(self.contrast_img)
+            self.qimg = self.get_qimg('Matplotlib.jpg')
+            self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
+            os.remove('Matplotlib.jpg')
