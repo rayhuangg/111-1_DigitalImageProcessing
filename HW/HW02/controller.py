@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
 
-import cv2, os
+import cv2, os, copy
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -32,8 +32,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_2_5_shrink.clicked.connect(self.Q2_5_shrink)
         self.ui.button_2_6_brightness_an_contrast.clicked.connect(self.Q2_6_brightness_and_contrast)
 
-        self.ui.horizontalSlider_threshold.valueChanged.connect(self.getslidervalue)
-
 
     # plot histogram
     def plot_histogram(self, img):
@@ -47,8 +45,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         plt.bar(self.x_axis, self.hist)
         plt.title("Histogram")
         plt.savefig("Matplotlib.jpg")
-        # self.display_img(img_name="Matplotlib.jpg", objectName=objectName)
-        # os.remove("Matplotlib.jpg")
 
 
     def get_qimg(self, img):
@@ -60,9 +56,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         # 記得對彩色圖及黑白圖片的QImage.Format、bytesPerline設定
         # self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        if len(self.img.shape) == 3:
+        if len(self.img.shape) == 3: # color img
             self.qimg = QImage(self.img, self.img.shape[1], self.img.shape[0], self.img.shape[1]*3, QImage.Format_RGB888).rgbSwapped()
-        elif len(self.img.shape) == 2:
+        elif len(self.img.shape) == 2: # binary img
             self.qimg = QImage(self.img, self.img.shape[1], self.img.shape[0], self.img.shape[1], QImage.Format_Grayscale8).rgbSwapped()
 
         return self.qimg
@@ -103,7 +99,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         for i in range(self.img.shape[0]):
             for n in range(self.img.shape[1]):
-                self.gray_A[i,n] = (int(self.R[i,n]) + int(self.G[i,n]) + int(self.B[i,n])) / 3.0
+                self.gray_A[i,n] = (int(self.R[i,n]) + int(self.G[i,n]) + int(self.B[i,n])) // 3.0
                 self.gray_B[i,n] = int(0.299 * int(self.R[i,n]) + 0.587 * int(self.G[i,n]) + 0.114 * int(self.B[i,n]))
 
         self.diff = np.zeros_like(self.G)
@@ -144,9 +140,20 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
     def Q2_4_threshold(self):
+        # Get slider value
+        self.threshold = self.ui.horizontalSlider_threshold.value()
+        self.ui.label_threshold.setText(str(self.threshold))
 
+        # Threshold
+        self.binary_image = copy.deepcopy(self.gray_A) # 複製gray image
+        for i in range(self.gray_A.shape[0]):
+            for n in range(self.gray_A.shape[1]):
+                if self.binary_image[i,n] > self.threshold:
+                    self.binary_image[i,n] = 255
 
-        pass
+        self.qimg = self.get_qimg(self.binary_image)
+        self.ui.label_img_5.setPixmap(QPixmap.fromImage(self.qimg))
+
 
     def Q2_5_enlarge(self):
         pass
@@ -155,4 +162,34 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         pass
 
     def Q2_6_brightness_and_contrast(self):
-        pass
+        self.img = cv2.imread(self.img_name)
+
+        # Get slider value
+        self.brightness = self.ui.horizontalSlider_brightness.value()
+        self.ui.label_brightness.setText(str(self.brightness))
+        self.contrast = self.ui.horizontalSlider_contrast.value()
+        self.ui.label_contrast.setText(str(self.contrast))
+
+        # Adjust brightness
+        # ref https://steam.oxxostudio.tw/category/python/ai/opencv-adjust.html
+        self.brightness_img = self.img * 1.0 + self.brightness # 此處沒有*1.0就會出現奇怪顏色，包括*1也會，不確定原因
+        self.brightness_img = np.uint8(np.clip(self.brightness_img, 0, 255)) # 避免溢位
+
+        # Adjust contrast
+        self.contrast_img = self.img * (self.contrast/127 + 1) - self.contrast
+        self.contrast_img = np.uint8(np.clip(self.contrast_img, 0, 255)) # 避免溢位
+
+        self.qimg = self.get_qimg(self.brightness_img)
+        self.ui.label_img_7.setPixmap(QPixmap.fromImage(self.qimg))
+        self.qimg = self.get_qimg(self.contrast_img)
+        self.ui.label_img_8.setPixmap(QPixmap.fromImage(self.qimg))
+
+
+        self.plot_histogram(self.brightness_img)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_7.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+        self.plot_histogram(self.contrast_img)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
