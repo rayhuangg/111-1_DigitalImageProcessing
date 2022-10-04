@@ -1,8 +1,9 @@
+# from sympy import *
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
 
-import cv2, os, copy
+import cv2, os, copy, math
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -95,7 +96,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         self.gray_A = np.array((self.R/3 + self.G/3 + self.B/3), dtype=np.uint8)
         self.gray_B = np.array((0.299*(self.R) + 0.587*(self.G) + 0.114*(self.B)), dtype=np.uint8)
-        self.diff = self.gray_A-self.gray_B
+        self.diff = self.gray_A - self.gray_B
 
         # 參考 https://codeantenna.com/a/sZw8f2E1Ie 精簡化顯示照片
         self.qimg = self.get_qimg(self.gray_A)
@@ -143,7 +144,32 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
     def Q2_5_enlarge(self):
-        pass
+        self.gray = copy.deepcopy(self.gray_A)
+
+        self.enlarge = np.zeros_like(self.gray)
+
+        ## Calculate weight by distance
+        for x in range(self.gray.shape[0]):
+            for y in range(self.gray.shape[1]):
+                a = self.gray[x,y,0] - math.floor(self.gray[x,y,0])
+                b = self.gray[x,y,1] - math.floor(self.gray[x,y,1])
+
+                self.enlarge[x,y] = a*b*self.gray[x+1,y+1] \
+                                    + (1-a)*b*self.gray[x,y+1] \
+                                    + a*(1-b)*self.gray[x+1,y] \
+                                    + (1-a)*(1-b)*self.gray[x,y]
+
+        ## Bilinear interpolation
+        # for x in range(1, self.gray.shape[0]-1):
+        #     for y in range(1, self.gray.shape[1]-1):
+        #         a, b, c, d = symbols('a, b, c, d', communtative=True)
+        #         self.solved_value = solve((a*(x-1) + b*y + c*(x-1)*y + d - self.gray[x-1, y],
+        #                             a*x + b*(y+1) + c*x*(y+1) + d - self.gray[x, y+1],
+        #                             a*x + b*(y+1) + c*x*(y+1) + d - self.gray[x, y-1],
+        #                             a*(x+1) + b*y + c*(x+1)*y + d - self.gray[x+1, y]),
+        #                             (a,b,c,d))
+
+
 
     def Q2_5_shrink(self):
         pass
@@ -171,21 +197,21 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
     def Q2_6_contrast(self):
-            self.img = cv2.imread(self.img_name)
+        self.img = cv2.imread(self.img_name)
 
-            # Get slider value
-            self.contrast = self.ui.horizontalSlider_contrast.value()
-            self.ui.label_contrast.setText(str(self.contrast))
+        # Get slider value
+        self.contrast = self.ui.horizontalSlider_contrast.value()
+        self.ui.label_contrast.setText(str(self.contrast))
 
-            # Adjust contrast
-            # ref https://steam.oxxostudio.tw/category/python/ai/opencv-adjust.html
-            self.contrast_img = self.img * (self.contrast/127 + 1) - self.contrast
-            self.contrast_img = np.uint8(np.clip(self.contrast_img, 0, 255)) # 避免溢位
+        # Adjust contrast
+        # ref https://steam.oxxostudio.tw/category/python/ai/opencv-adjust.html
+        self.contrast_img = self.img * (self.contrast/127 + 1) - self.contrast
+        self.contrast_img = np.uint8(np.clip(self.contrast_img, 0, 255)) # 避免溢位
 
-            self.qimg = self.get_qimg(self.contrast_img)
-            self.ui.label_img_8.setPixmap(QPixmap.fromImage(self.qimg))
+        self.qimg = self.get_qimg(self.contrast_img)
+        self.ui.label_img_8.setPixmap(QPixmap.fromImage(self.qimg))
 
-            self.plot_histogram(self.contrast_img)
-            self.qimg = self.get_qimg('Matplotlib.jpg')
-            self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
-            os.remove('Matplotlib.jpg')
+        self.plot_histogram(self.contrast_img)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
