@@ -96,7 +96,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         self.gray_A = np.array((self.R/3 + self.G/3 + self.B/3), dtype=np.uint8)
         self.gray_B = np.array((0.299*(self.R) + 0.587*(self.G) + 0.114*(self.B)), dtype=np.uint8)
-        self.diff = self.gray_A - self.gray_B
+        self.diff = np.clip((self.gray_A - self.gray_B), 0, 255)
 
         # 參考 https://codeantenna.com/a/sZw8f2E1Ie 精簡化顯示照片
         self.qimg = self.get_qimg(self.gray_A)
