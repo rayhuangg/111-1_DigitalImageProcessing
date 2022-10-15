@@ -8,11 +8,11 @@ import cv2, os, copy, math
 import numpy as np
 from matplotlib import pyplot as plt
 
-import os
-import qt5_applications
-dirname = os.path.dirname(qt5_applications.__file__)
-plugin_path = os.path.join(dirname, 'Qt', 'plugins', 'platforms')
-os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+# import os
+# import qt5_applications
+# dirname = os.path.dirname(qt5_applications.__file__)
+# plugin_path = os.path.join(dirname, 'Qt', 'plugins', 'platforms')
+# os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 
 
@@ -25,7 +25,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def setup_control(self):
         # TODO
-
         self.ui.button_file.clicked.connect(self.Q2_1_open_file)
         self.ui.button_2_2_grayscale.clicked.connect(self.Q2_2_grayscale)
         self.ui.button_2_3_histogram.clicked.connect(self.Q2_3_histogram)
