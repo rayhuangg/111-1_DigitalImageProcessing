@@ -2,12 +2,13 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 
 import cv2, os, copy, math
 import numpy as np
 from matplotlib import pyplot as plt
 
-from UI import Ui_MainWindow
 
 class MainWindow_controller(QtWidgets.QMainWindow):
     def __init__(self):
@@ -124,3 +125,67 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
 
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.label_img_1 = QtWidgets.QLabel(self.centralwidget)
+        self.label_img_1.setGeometry(QtCore.QRect(20, 140, 200, 150))
+        self.label_img_1.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_img_1.setObjectName("label_img_1")
+        self.label_img_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_img_2.setGeometry(QtCore.QRect(330, 140, 200, 150))
+        self.label_img_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_img_2.setObjectName("label_img_2")
+        self.label_threshold_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_threshold_2.setGeometry(QtCore.QRect(10, 0, 101, 51))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(20)
+        self.label_threshold_2.setFont(font)
+        self.label_threshold_2.setTextFormat(QtCore.Qt.MarkdownText)
+        self.label_threshold_2.setObjectName("label_threshold_2")
+        self.button_file = QtWidgets.QPushButton(self.centralwidget)
+        self.button_file.setGeometry(QtCore.QRect(10, 60, 111, 31))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.button_file.setFont(font)
+        self.button_file.setObjectName("button_file")
+        self.button_filter = QtWidgets.QPushButton(self.centralwidget)
+        self.button_filter.setGeometry(QtCore.QRect(310, 60, 111, 31))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.button_filter.setFont(font)
+        self.button_filter.setObjectName("button_filter")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label_img_1.setText(_translate("MainWindow", "img"))
+        self.label_img_2.setText(_translate("MainWindow", "result"))
+        self.label_threshold_2.setText(_translate("MainWindow", "Part 2"))
+        self.button_file.setText(_translate("MainWindow", "choose img"))
+        self.button_filter.setText(_translate("MainWindow", "filter"))
+
+
+
+if __name__ == '__main__':
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow_controller()
+    window.show()
+    sys.exit(app.exec_())
