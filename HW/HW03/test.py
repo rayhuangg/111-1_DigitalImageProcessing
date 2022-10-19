@@ -4,6 +4,7 @@
 
 import cv2, copy, math
 import numpy as np
+from matplotlib import pyplot as plt
 
 img = cv2.imread('lena.jpg')
 B, G, R = cv2.split(img)
@@ -50,49 +51,37 @@ class Conv3x3:
 
         # filters is a 3d array with dimensions (num_filters, 3, 3)
         # We divide by 9 to reduce the variance of our initial values
-        self.filters = np.random.randn(num_filters, 3, 3) / 9
+        # self.filters = np.random.randn(num_filters, 3, 3) / 9
+        self.filters =  np.array([[1,1,1],
+                   [1,1,1],
+                   [1,1,1]]) / 9
 
     # get resize image
-    def resize(self, img, w=200, h=150):
-        height, width, channels = img.shape
-        out = np.zeros((h, w, channels), np.uint8)
-        h2 = h / height
-        w2 = w / width
-        for i in range(h):
-            for j in range(w):
+    def resize(self, img, width=200, height=150):
+        out = np.zeros((height, width), np.uint8)
+        h, w = img.shape
+        h2 = height / h
+        w2 = width / w
+        for i in range(height):
+            for j in range(width):
                 x = int(i / h2)
                 y = int(j / w2)
-                out[i, j, :] = img[x, y, :]
-        print("reshape",out.shape)
+                out[i, j] = img[x, y]
         return out
 
-    def zoom(self,img):
-            height,width,channels=img.shape #獲得高寬三顏色通道三個值
-            empty=np.zeros((400,450,channels),np.uint8)  #設定一個（600，600）大小的三維0陣列
-            sh=400/height
-            sw=450/width
-            for i in range(400):
-                for j in range(450):
-                    x=int(i/sh)
-                    y=int(j/sw)
-                    empty[i,j,:]=img[x,y,:]
-            return empty
 
     def iterate_regions(self, image):
-        '''
-        Generates all possible 3x3 image regions using zero padding.
-        - image is a 2d numpy array
-        '''
         h, w = image.shape
 
+
+        # 將 im_region, i, j 存到迭代器中，讓後面遍歷
         for i in range(h - 2):
             for j in range(w - 2):
                 im_region = image[i:(i + 3), j:(j + 3)]
                 yield im_region, i, j
-        # 將 im_region, i, j 存到迭代器中，讓後面遍歷
 
     # zero padding
-    def padding(self, data, n):
+    def padding(self, data, n=2):
         # data = np.pad(data, ((n,n),(n,n)))
         return np.pad(data, ((n,n),(n,n)))
 
@@ -110,24 +99,24 @@ class Conv3x3:
         output = np.zeros((h - 2, w - 2, self.num_filters))
 
         for im_region, i, j in self.iterate_regions(input):
-            # 卷积运算，点乘再相加，ouput[i, j] 为向量，8 层
+            # 捲機運算，点乘再相加，ouput[i, j] 为向量，8 层
             output[i, j] = np.sum(im_region * self.filters, axis=(1, 2))
-        # 最后将输出数据返回，便于下一层的输入使用
+            output = np.clip(np.uint8(output), 0, 255)
+        print(output.shape)
         return output
 
     def main(self):
-        img = cv2.imread('lena.jpg')
-        print("img",img.shape)
-        B, G, R = cv2.split(img)
-        gray = np.array((R/3 + G/3 + B/3), dtype=np.uint8)
+        img = cv2.imread('lena.jpg', cv2.IMREAD_GRAYSCALE)
+        img = self.resize(img)
 
-        re = self.resize(img)
+        img_c = self.forward(img)
 
-        print(re.shape)
 
-        cv2.imshow('img_n', re)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        plt.figure()
+        plt.imshow(img_c, cmap='gray')
+        plt.show()
+
+        # https://github.com/vzhou842/cnn-from-scratch/blob/master/conv.py
 
 c = Conv3x3()
 c.main()
