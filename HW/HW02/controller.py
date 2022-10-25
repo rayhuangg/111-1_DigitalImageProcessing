@@ -42,9 +42,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         for i in np.unique(img):
             self.hist[i] = np.bincount(img.flatten())[i]
 
-        self.x_axis = np.arange(256)
+        x_axis = np.arange(256)
         plt.figure(figsize=(4,3))
-        plt.bar(self.x_axis, self.hist)
+        plt.bar(x_axis, self.hist)
         plt.title("Histogram")
         plt.savefig("Matplotlib.jpg")
 
