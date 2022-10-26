@@ -42,7 +42,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
         elif type(img) == np.ndarray:
              self.img = img
-        # self.img = cv2.resize(self.img, (200,150))
 
         self.img = self.img_resize(self.img, width=200, height=150)
 

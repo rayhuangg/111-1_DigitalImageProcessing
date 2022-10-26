@@ -29,24 +29,58 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_2_2_grayscale.clicked.connect(self.Q2_2_grayscale)
         self.ui.button_2_3_histogram.clicked.connect(self.Q2_3_histogram)
         self.ui.button_2_4_threshold.clicked.connect(self.Q2_4_threshold)
-        self.ui.button_2_5_enlarge.clicked.connect(self.Q2_5_enlarge)
-        self.ui.button_2_5_shrink.clicked.connect(self.Q2_5_shrink)
+        # self.ui.button_2_5_enlarge.clicked.connect(self.Q2_5_enlarge)
+        # self.ui.button_2_5_shrink.clicked.connect(self.Q2_5_shrink)
         self.ui.button_2_6_brightness.clicked.connect(self.Q2_6_brightness)
         self.ui.button_2_6_contrast.clicked.connect(self.Q2_6_contrast)
+        self.ui.button_2_7_histogram_equalazation.clicked.connect(self.Q2_6_histogram_equ)
+
+
+    # Calculate histogram
+    def get_histogram(self, data):
+        hist = np.zeros(256)
+        # 計算各數值數量並儲存
+        for i in np.unique(data):
+            hist[i] = np.bincount(data.flatten())[i]
+
+        return hist
+
+
+    def hist_equalization(self, img):
+        hist = self.get_histogram(img)
+
+        # Caculate CDF
+        hist_cumsum = np.cumsum(hist)
+        const = 255 / img.size
+        hists_cdf = np.uint8(const * hist_cumsum)
+        # mapping
+        equ_img = hists_cdf[img]
+
+        return equ_img
 
 
     # plot histogram
     def plot_histogram(self, img):
-        self.hist = np.zeros(256)
-        # 計算各數值數量並儲存
-        for i in np.unique(img):
-            self.hist[i] = np.bincount(img.flatten())[i]
-
+        hist = self.get_histogram(img)
         x_axis = np.arange(256)
         plt.figure(figsize=(4,3))
-        plt.bar(x_axis, self.hist)
+        plt.bar(x_axis, hist)
         plt.title("Histogram")
         plt.savefig("Matplotlib.jpg")
+
+
+    # # get resize image
+    # def img_resize(self, img, width=200, height=150):
+    #     out = np.zeros((height, width, 3), np.uint8)
+    #     h, w = img.shape
+    #     h2 = height / h
+    #     w2 = width / w
+    #     for i in range(height):
+    #         for j in range(width):
+    #             x = int(i / h2)
+    #             y = int(j / w2)
+    #             out[i, j, ] = img[x, y, ]
+    #     return out
 
 
     def get_qimg(self, img):
@@ -55,6 +89,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         elif type(img) == np.ndarray:
              self.img = img
         self.img = cv2.resize(self.img, (200,150))
+        # self.img = self.img_resize(self.img, width=200, height=150)
 
         # 記得對彩色圖及黑白圖片的QImage.Format、bytesPerline設定
         # self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
@@ -214,4 +249,26 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.plot_histogram(self.contrast_img)
         self.qimg = self.get_qimg('Matplotlib.jpg')
         self.ui.label_hist_8.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+
+
+    def Q2_6_histogram_equ(self):
+        self.img = cv2.imread(self.img_name, cv2.IMREAD_GRAYSCALE) # gray
+
+        self.qimg = self.get_qimg(self.img)
+        self.ui.label_img_9.setPixmap(QPixmap.fromImage(self.qimg))
+        self.plot_histogram(self.img)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_9.setPixmap(QPixmap.fromImage(self.qimg))
+        os.remove('Matplotlib.jpg')
+
+        # get hitogram equalization image
+        self.img = cv2.imread(self.img_name, cv2.IMREAD_GRAYSCALE) # gray
+        self.equ_img = self.hist_equalization(self.img)
+
+        self.qimg = self.get_qimg(self.equ_img)
+        self.ui.label_img_10.setPixmap(QPixmap.fromImage(self.qimg))
+        self.plot_histogram(self.equ_img)
+        self.qimg = self.get_qimg('Matplotlib.jpg')
+        self.ui.label_hist_10.setPixmap(QPixmap.fromImage(self.qimg))
         os.remove('Matplotlib.jpg')

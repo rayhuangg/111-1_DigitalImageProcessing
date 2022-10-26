@@ -9,11 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import os
-import qt5_applications
-dirname = os.path.dirname(qt5_applications.__file__)
-plugin_path = os.path.join(dirname, 'Qt', 'plugins', 'platforms')
-os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -176,28 +172,28 @@ class Ui_MainWindow(object):
         self.button_2_7_histogram_equalazation.setGeometry(QtCore.QRect(1110, 540, 201, 41))
         self.button_2_7_histogram_equalazation.setObjectName("button_2_7_histogram_equalazation")
         self.label_threshold_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_threshold_2.setGeometry(QtCore.QRect(1180, 620, 47, 12))
+        self.label_threshold_2.setGeometry(QtCore.QRect(1180, 610, 47, 12))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label_threshold_2.setFont(font)
         self.label_threshold_2.setObjectName("label_threshold_2")
         self.label_threshold_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_threshold_3.setGeometry(QtCore.QRect(1470, 620, 47, 12))
+        self.label_threshold_3.setGeometry(QtCore.QRect(1470, 610, 47, 12))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label_threshold_3.setFont(font)
         self.label_threshold_3.setObjectName("label_threshold_3")
         self.label_img_10 = QtWidgets.QLabel(self.centralwidget)
-        self.label_img_10.setGeometry(QtCore.QRect(1410, 690, 200, 150))
+        self.label_img_10.setGeometry(QtCore.QRect(1410, 660, 200, 150))
         self.label_img_10.setObjectName("label_img_10")
         self.label_img_9 = QtWidgets.QLabel(self.centralwidget)
-        self.label_img_9.setGeometry(QtCore.QRect(1120, 690, 200, 150))
+        self.label_img_9.setGeometry(QtCore.QRect(1120, 660, 200, 150))
         self.label_img_9.setObjectName("label_img_9")
         self.label_hist_9 = QtWidgets.QLabel(self.centralwidget)
-        self.label_hist_9.setGeometry(QtCore.QRect(1120, 850, 200, 150))
+        self.label_hist_9.setGeometry(QtCore.QRect(1120, 820, 200, 150))
         self.label_hist_9.setObjectName("label_hist_9")
         self.label_hist_10 = QtWidgets.QLabel(self.centralwidget)
-        self.label_hist_10.setGeometry(QtCore.QRect(1410, 850, 200, 150))
+        self.label_hist_10.setGeometry(QtCore.QRect(1410, 820, 200, 150))
         self.label_hist_10.setObjectName("label_hist_10")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
