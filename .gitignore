@@ -161,7 +161,6 @@ cython_debug/
 
 
 # my setting
-Digital Image Processing, 4e (Rafael C. Gonzalez) (z-lib.org).pdf
 ~$*.docx
 *.tmp
 *.zip

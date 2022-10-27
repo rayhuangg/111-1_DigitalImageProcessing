@@ -9,14 +9,14 @@ def plot_histogram(img) :
     hist = np.zeros(32)
 
     # 計算各數值數量並儲存
-    for i in np.unique(img):
-        hist[i] = np.bincount(img.flatten())[i] 
+    for i in np.unique(img): 
+        hist[i] = np.bincount(img.flatten())[i]
 
     # 利用長條圖繪出顯示
     x_axis = np.arange(32)
     plt.bar(x_axis, hist)
     # plt.show()
-    
+
 
 # 繪製圖片
 def plot_64(img):
@@ -26,14 +26,14 @@ def plot_64(img):
 
 # 讀取原始資料並回傳ndarray
 def read_raw_data(filename='LINCOLN.64'):
-    
+
     with open(filename, 'r') as data:
         data_64 = data.readlines()
 
     np_64 = np.zeros(shape=(64,64)) # 建立64*64 np array
     np_64 = np.uint8(np_64) # 轉為8bit才可以正常顯示
 
-    # 將64文字資料轉為0~31數值      
+    # 將64文字資料轉為0~31數值
     for row, line in enumerate(data_64):
         for col, character in enumerate(line):
             if str(character).isdigit():
@@ -124,8 +124,8 @@ plot_2_subplot(img=new_64, title="Task: Multiply 1.75 on every pixel")
 np_64_1 = read_raw_data(filename='LINCOLN.64')
 np_64_2 = read_raw_data(filename='JET.64')
 
-new_64 = np.zeros(shape=(64,64)) 
-new_64 = np.uint8(np_64) 
+new_64 = np.zeros(shape=(64,64))
+new_64 = np.uint8(np_64)
 
 # 對每一像素做平均
 for i in range(63):
@@ -157,9 +157,9 @@ for i in range(63):
 
         elif (int(np_64[i][j]) - int(right[i][j])) >= 31: # 設定上限
             sub_result[i][j] = 31
-        
+
         else:
             sub_result[i][j] = int(np_64[i][j]) - int(right[i][j])
-        
+
 plot_2_subplot(img=right, title='Task: shift right 1 pixel')
 plot_2_subplot(img=sub_result, title='Task: g(x,y) = f(x,y) - f(x-1,y)')
