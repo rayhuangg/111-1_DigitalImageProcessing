@@ -19,8 +19,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def setup_control(self):
         # TODO
         self.ui.button_file.clicked.connect(self.open_file)
-        self.ui.button_fft.clicked.connect(self.fft)
+        self.ui.button_file_2.clicked.connect(self.open_file)
+        self.ui.button_fft.clicked.connect(self.part1_fft)
+        self.ui.button_filter_1.clicked.connect(self.idal_filter)
+        self.ui.button_filter_2.clicked.connect(self.butterworth_filter)
+        self.ui.button_filter_3.clicked.connect(self.gaussian_filter)
 
+        self.ui.horizontalSlider_cutoff.valueChanged.connect(self.slider_show)
 
     # plot histogram
     def plot_histogram(self, img):
@@ -38,33 +43,41 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def get_qimg(self, img):
         if type(img) == str: # 路徑的話就做imread,否則直接使用
-            self.img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+            img = cv2.imread(img, 0) # gray
         elif type(img) == np.ndarray:
-             self.img = img
+             img = img
 
-        self.img = self.img_resize(self.img, width=200, height=150)
+        img = self.img_resize(img, width=200, height=150)
 
         # 記得對彩色圖及黑白圖片的QImage.Format、bytesPerline設定
         # self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        if len(self.img.shape) == 3: # color img
-            self.qimg = QImage(self.img, self.img.shape[1], self.img.shape[0], self.img.shape[1]*3, QImage.Format_RGB888).rgbSwapped()
-        elif len(self.img.shape) == 2: # binary img
-            self.qimg = QImage(self.img, self.img.shape[1], self.img.shape[0], self.img.shape[1], QImage.Format_Grayscale8).rgbSwapped()
+        if len(img.shape) == 3: # color img
+            qimg = QImage(img, img.shape[1], img.shape[0], img.shape[1]*3, QImage.Format_RGB888).rgbSwapped()
+        elif len(img.shape) == 2: # binary img
+            qimg = QImage(img, img.shape[1], img.shape[0], img.shape[1], QImage.Format_Grayscale8).rgbSwapped()
 
-        return self.qimg
+        return qimg
 
 
     # get resize image
     def img_resize(self, img, width=200, height=150):
-        out = np.zeros((height, width), np.uint8)
-        h, w = img.shape
+        if len(img.shape) == 3: # color img
+            out = np.zeros((height, width, 3), np.uint8)
+        elif len(img.shape) == 2: # binary img
+            out = np.zeros((height, width), np.uint8)
+
+        h, w = img.shape[0], img.shape[1]
         h2 = height / h
         w2 = width / w
         for i in range(height):
             for j in range(width):
                 x = int(i / h2)
                 y = int(j / w2)
-                out[i, j] = img[x, y]
+                if len(img.shape) == 3: # color img
+                    out[i, j, :] = img[x, y, :]
+                elif len(img.shape) == 2: # binary img
+                    out[i, j] = img[x, y]
+
         return out
 
 
@@ -94,12 +107,20 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.img_name, _ = QFileDialog.getOpenFileName(self,
                 "Open file",
                 "./")   # start path
-
         self.img_name = self.img_name.split("/")[-1] # 取檔案路徑最後一個分割，即為檔名
-        self.img = cv2.imread(self.img_name)
+        self.raw_img = cv2.imread(self.img_name)
 
-        qimg = self.get_qimg(self.img_name)
-        self.ui.label_img_1.setPixmap(QPixmap.fromImage(qimg))
+        qimg = self.get_qimg(self.img_name) # gray
+
+        # 判斷要顯示在哪個分頁上
+        if self.ui.tabWidget.currentIndex() == 0:
+            self.ui.label_img_1.setPixmap(QPixmap.fromImage(qimg))
+        elif self.ui.tabWidget.currentIndex() == 1:
+            self.ui.label_img_3.setPixmap(QPixmap.fromImage(qimg))
+
+    # 顯示sliderbar數值
+    def slider_show(self):
+        self.ui.label_cutoff.setText(str(self.ui.horizontalSlider_cutoff.value()))
 
 
     # def forward(self):
@@ -121,27 +142,77 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # self.ui.label_img_2.setPixmap(QPixmap.fromImage(self.qimg))
 
 
-    def fft(self):
-        src = cv2.imread(self.img_name, 0) # gray
+    def grayscale(self, img):
+        B = img[:,:,0]
+        G = img[:,:,1]
+        R = img[:,:,2]
 
-        start = time.process_time()
+        return np.array((R/3 + G/3 + B/3), dtype=np.uint8)
+
+
+    def fft_cv2(self, img):
+        if len(img.shape) == 3:
+            img = self.grayscale(img)
+
         # 將影像進行float轉換才能進行dft
-        result = cv2.dft(np.float32(src), flags=cv2.DFT_COMPLEX_OUTPUT)
+        dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
         # 將spectrum平移到中心
-        dft_shift = np.fft.fftshift(result)
+        dft_shift = np.fft.fftshift(dft)
         # 將spectrum複數轉換為 0-255 區間
-        result1 = 20 * np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]))
+        result = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
 
-        qimg = self.get_qimg(result1)
+        return dft_shift, result
+
+
+    def ifft_cv2(self, dft_shift):
+        idft_shift = np.fft.ifftshift(dft_shift)
+        img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
+
+        return img_back
+
+
+    def part1_fft(self):
+        start = time.process_time()
+
+        dft_shift, spectrum = self.fft_cv2(self.raw_img)
+        img_back = self.ifft_cv2(dft_shift)
+
+        qimg = self.get_qimg(spectrum)
         self.ui.label_img_2.setPixmap(QPixmap.fromImage(qimg))
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_7.setPixmap(QPixmap.fromImage(qimg))
 
-        # plt.subplot(121), plt.imshow(src, 'gray'), plt.title('oreginal')
-        # plt.axis('off')
-        # plt.subplot(122), plt.imshow(result1, 'gray'), plt.title('FFT')
-        # plt.axis('off')
-        # plt.show()
         end = time.process_time()
-        print(f"Process time: {(end-start):0.10f} s")
+        # print(f"Process time: {(end-start):0.10f} s")
+        self.ui.textEdit.setText(f"Process time: {(end-start):0.10f} s")
 
-        # return result1
+
+    def idal_filter(self):
+        # https://blog.csdn.net/qq_38463737/article/details/118682500
+        dft_shift, spectrum = self.fft_cv2(self.raw_img)
+
+        # 設置截止頻率
+        cut_off = self.ui.horizontalSlider_cutoff.value()
+
+        rows, cols = self.raw_img.shape[0], self.raw_img.shape[1]
+        crow, ccol = (rows // 2), (cols // 2) # mask中心位置
+        mask = np.zeros((rows, cols, 2), np.uint8)
+        mask[crow-cut_off : crow+cut_off, ccol-cut_off : ccol+cut_off] = 1 # 設定mask
+        # mask和頻譜圖像相乘
+        dft_shift_new = dft_shift * mask
+
+        img_back = self.ifft_cv2(dft_shift_new)
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
+
+
+
+
+
+    def butterworth_filter(self):
+        pass
+
+
+    def gaussian_filter(self):
+        pass
 
