@@ -21,11 +21,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_file.clicked.connect(self.open_file)
         self.ui.button_file_2.clicked.connect(self.open_file)
         self.ui.button_fft.clicked.connect(self.part1_fft)
-        self.ui.button_filter_1.clicked.connect(self.idal_filter)
-        self.ui.button_filter_2.clicked.connect(self.butterworth_filter)
-        self.ui.button_filter_3.clicked.connect(self.gaussian_filter)
+        # self.ui.button_filter_1.clicked.connect(self.idal_filter)
+        # self.ui.button_filter_2.clicked.connect(self.butterworth_filter)
+        # self.ui.button_filter_3.clicked.connect(self.gaussian_filter)
 
         self.ui.horizontalSlider_cutoff.valueChanged.connect(self.slider_show)
+        self.ui.button_go.clicked.connect(self.part2_select_filter)
 
     # plot histogram
     def plot_histogram(self, img):
@@ -108,9 +109,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 "Open file",
                 "./")   # start path
         self.img_name = self.img_name.split("/")[-1] # 取檔案路徑最後一個分割，即為檔名
-        self.raw_img = cv2.imread(self.img_name)
+        self.raw_img = cv2.imread(self.img_name, 0) # gray
 
-        qimg = self.get_qimg(self.img_name) # gray
+        qimg = self.get_qimg(self.raw_img)
 
         # 判斷要顯示在哪個分頁上
         if self.ui.tabWidget.currentIndex() == 0:
@@ -146,7 +147,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         B = img[:,:,0]
         G = img[:,:,1]
         R = img[:,:,2]
-
         return np.array((R/3 + G/3 + B/3), dtype=np.uint8)
 
 
@@ -159,9 +159,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # 將spectrum平移到中心
         dft_shift = np.fft.fftshift(dft)
         # 將spectrum複數轉換為 0-255 區間
-        result = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
+        result_log = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
 
-        return dft_shift, result
+        return dft_shift, result_log
 
 
     def ifft_cv2(self, dft_shift):
@@ -174,10 +174,10 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def part1_fft(self):
         start = time.process_time()
 
-        dft_shift, spectrum = self.fft_cv2(self.raw_img)
+        dft_shift, shift_log = self.fft_cv2(self.raw_img)
         img_back = self.ifft_cv2(dft_shift)
 
-        qimg = self.get_qimg(spectrum)
+        qimg = self.get_qimg(shift_log)
         self.ui.label_img_2.setPixmap(QPixmap.fromImage(qimg))
         qimg = self.get_qimg(img_back)
         self.ui.label_img_7.setPixmap(QPixmap.fromImage(qimg))
@@ -187,31 +187,93 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.textEdit.setText(f"Process time: {(end-start):0.10f} s")
 
 
-    def idal_filter(self):
+    # 選擇要用哪個filter
+    def part2_select_filter(self):
+        if (self.ui.comboBox_filter.currentText()) == "Ideal lowpass filter":
+            self.idal_filter(type="low")
+        elif (self.ui.comboBox_filter.currentText()) == "Ideal highpass filter":
+            self.idal_filter(type="high")
+        elif (self.ui.comboBox_filter.currentText()) == "Butterworth lowpass filter":
+            self.butterworth_filter()
+
+    ## FIXME 高通綠波還怪怪的
+    # ref https://blog.csdn.net/Eastmount/article/details/89645301
+    def idal_filter(self, type="low"):
         # https://blog.csdn.net/qq_38463737/article/details/118682500
-        dft_shift, spectrum = self.fft_cv2(self.raw_img)
+        dft_shift, shift_log = self.fft_cv2(self.raw_img)
 
         # 設置截止頻率
-        cut_off = self.ui.horizontalSlider_cutoff.value()
-
+        d0 = self.ui.horizontalSlider_cutoff.value()
         rows, cols = self.raw_img.shape[0], self.raw_img.shape[1]
-        crow, ccol = (rows // 2), (cols // 2) # mask中心位置
-        mask = np.zeros((rows, cols, 2), np.uint8)
-        mask[crow-cut_off : crow+cut_off, ccol-cut_off : ccol+cut_off] = 1 # 設定mask
-        # mask和頻譜圖像相乘
-        dft_shift_new = dft_shift * mask
+        crow, ccol = int(rows/2), int(cols/2) # mask中心位置
 
-        img_back = self.ifft_cv2(dft_shift_new)
+        if type == "low":
+            mask = np.zeros((rows, cols, 2), np.uint8)
+            mask[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 1 # 設定mask
+            # mask和頻譜圖像相乘濾波
+            dft_shift = dft_shift * mask
+            print(mask)
+        elif type == "high":
+            # mask = np.ones((rows, cols, 2), np.uint8)
+            # mask[crow-cut_off : crow+cut_off, ccol-cut_off : ccol+cut_off] = 0 # 設定mask
+            dft_shift[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 0
+
+        ## FIXME 為何要加上abs/clip才不會出現奇怪線條還未知
+        # img_back = np.abs(self.ifft_cv2(dft_shift))
+        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
         qimg = self.get_qimg(img_back)
         self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
 
 
-
-
-
     def butterworth_filter(self):
-        pass
+        dft_shift, spectrum = self.fft_cv2(self.raw_img)
 
+        ##### FIXME mask type用uint8就不行..........
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=np.uint8)
+        print(mask[0][0])
+        print(mask.dtype)
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
+        print(mask[0][0])
+        print(mask.dtype)
+
+        n = 2
+        d0 = self.ui.horizontalSlider_cutoff.value()
+        ci, cj = mask.shape[0]//2, mask.shape[1]//2
+
+        for i in range(mask.shape[0]):
+            for j in range(mask.shape[1]):
+                denominator = 1 + ((math.sqrt((i - ci)**2 + (j - cj)**2) / d0) ** (2*n))
+                mask[i, j] = 1 / denominator
+        dft_shift = dft_shift * mask
+
+        # img_back = np.abs(self.ifft_cv2(dft_shift))
+        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
+
+
+    #巴特沃斯低通滤波器
+    def Butterworth_LowPass_Filter (image, d, n, s1):
+        # Butterworth低通滤波器
+        f = np.fft.fft2(image)
+        fshift = np.fft.fftshift(f)
+
+        def make_transform_matrix(d):
+            transform_matrix = np.zeros(image.shape)
+            center_point = tuple (map (lambda x: (x - 1) / 2, s1.shape))
+            for i in range(transform_matrix.shape[0]):
+                for j in range(transform_matrix.shape[1]):
+                    def cal_distance (pa, pb):
+                        from math import sqrt
+                        dis = sqrt((pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2)
+                        return dis
+                    dis = cal_distance (center_point, (i, j))
+                    transform_matrix[i, j] = 1 / (1 + (dis / d) ** (2 * n))
+                    return transform_matrix
+
+        d_matrix = make_transform_matrix(d)
+        new_img = np.abs(np.fft.ifft2(np.fft.ifftshift (fshift *  d_matrix)))
+        return new_img
 
     def gaussian_filter(self):
         pass

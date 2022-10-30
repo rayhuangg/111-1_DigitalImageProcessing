@@ -28,8 +28,28 @@ class test_qt:
         print(f"Process time: {(end-start):0.10f} s")
         return result1
 
+    def test(self):
+        src = cv2.imread("library(854_480).jpg", 0)
+        print(src.shape)
+
+        start = time.process_time()
+        # 將影像進行float轉換才能進行dft
+        result = cv2.dft(np.float32(src), flags=cv2.DFT_COMPLEX_OUTPUT)
+        # 將spectrum平移到中心
+        dft_shift = np.fft.fftshift(result)
+        print(dft_shift.shape)
+        s1 = np.log(np.abs(dft_shift))
+        center_point = tuple (map (lambda x: (x - 1) / 2, s1.shape))
+
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), np.uint8)
+        # a = np.log(np.abs(dft_shift))
+        ci, cj = mask.shape[0]//2, mask.shape[1]//2
+        print(ci,cj)
+
+        print(center_point)
+
     def main(self):
-        self.fft()
+        self.test()
 
 test = test_qt()
 test.main()
