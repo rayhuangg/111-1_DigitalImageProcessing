@@ -1,9 +1,8 @@
-# from sympy import *
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
 
-import cv2, os, copy, math, time
+import cv2, os, copy, math, cmath, time
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -16,17 +15,27 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setup_control()
 
+
+    # TODO
     def setup_control(self):
-        # TODO
+        # self.ui.tabWidget.setCurrentIndex(0) # 設定從第一分頁開始顯示
         self.ui.button_file.clicked.connect(self.open_file)
         self.ui.button_file_2.clicked.connect(self.open_file)
+        self.ui.button_file_3.clicked.connect(self.open_file)
+        self.ui.button_file_4.clicked.connect(self.open_file)
         self.ui.button_fft.clicked.connect(self.part1_fft)
-        # self.ui.button_filter_1.clicked.connect(self.idal_filter)
-        # self.ui.button_filter_2.clicked.connect(self.butterworth_filter)
-        # self.ui.button_filter_3.clicked.connect(self.gaussian_filter)
+        self.ui.button_go.clicked.connect(self.part2_select_filter)
 
         self.ui.horizontalSlider_cutoff.valueChanged.connect(self.slider_show)
-        self.ui.button_go.clicked.connect(self.part2_select_filter)
+        self.ui.horizontalSlider_c.valueChanged.connect(self.slider_show)
+        self.ui.horizontalSlider_d0.valueChanged.connect(self.slider_show)
+        self.ui.horizontalSlider_gh.valueChanged.connect(self.slider_show)
+        self.ui.horizontalSlider_gl.valueChanged.connect(self.slider_show)
+        self.ui.horizontalSlider_c.valueChanged.connect(self.homomorphic_filter)
+        self.ui.horizontalSlider_d0.valueChanged.connect(self.homomorphic_filter)
+        self.ui.horizontalSlider_gh.valueChanged.connect(self.homomorphic_filter)
+        self.ui.horizontalSlider_gl.valueChanged.connect(self.homomorphic_filter)
+        self.ui.comboBox_blur.currentTextChanged.connect(self.part4)
 
     # plot histogram
     def plot_histogram(self, img):
@@ -42,13 +51,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         plt.savefig("Matplotlib.jpg")
 
 
-    def get_qimg(self, img):
+    def get_qimg(self, img, width=200, height=150):
         if type(img) == str: # 路徑的話就做imread,否則直接使用
             img = cv2.imread(img, 0) # gray
         elif type(img) == np.ndarray:
              img = img
 
-        img = self.img_resize(img, width=200, height=150)
+        img = self.img_resize(img, width=width, height=height)
 
         # 記得對彩色圖及黑白圖片的QImage.Format、bytesPerline設定
         # self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
@@ -118,10 +127,20 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.label_img_1.setPixmap(QPixmap.fromImage(qimg))
         elif self.ui.tabWidget.currentIndex() == 1:
             self.ui.label_img_3.setPixmap(QPixmap.fromImage(qimg))
+        elif self.ui.tabWidget.currentIndex() == 2:
+            self.ui.label_img_5.setPixmap(QPixmap.fromImage(qimg))
+        elif self.ui.tabWidget.currentIndex() == 3:
+            qimg = self.get_qimg(self.raw_img, width=150, height=150)
+            self.ui.label_img_8.setPixmap(QPixmap.fromImage(qimg))
+
 
     # 顯示sliderbar數值
     def slider_show(self):
         self.ui.label_cutoff.setText(str(self.ui.horizontalSlider_cutoff.value()))
+        self.ui.label_gh.setText(str(self.ui.horizontalSlider_gh.value()))
+        self.ui.label_gl.setText(str(self.ui.horizontalSlider_gl.value()))
+        self.ui.label_c.setText(str(self.ui.horizontalSlider_c.value()))
+        self.ui.label_d0.setText(str(self.ui.horizontalSlider_d0.value()))
 
 
     # def forward(self):
@@ -194,14 +213,18 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         elif (self.ui.comboBox_filter.currentText()) == "Ideal highpass filter":
             self.idal_filter(type="high")
         elif (self.ui.comboBox_filter.currentText()) == "Butterworth lowpass filter":
-            self.butterworth_filter()
+            self.butterworth_filter(type="low")
+        elif (self.ui.comboBox_filter.currentText()) == "Butterworth highpass filter":
+            self.butterworth_filter(type="high")
+        elif (self.ui.comboBox_filter.currentText()) == "Gaussian lowpass filter":
+            self.gaussian_filter(type="low")
+        elif (self.ui.comboBox_filter.currentText()) == "Gaussian highpass filter":
+            self.gaussian_filter(type="high")
 
-    ## FIXME 高通綠波還怪怪的
-    # ref https://blog.csdn.net/Eastmount/article/details/89645301
+
     def idal_filter(self, type="low"):
         # https://blog.csdn.net/qq_38463737/article/details/118682500
         dft_shift, shift_log = self.fft_cv2(self.raw_img)
-
         # 設置截止頻率
         d0 = self.ui.horizontalSlider_cutoff.value()
         rows, cols = self.raw_img.shape[0], self.raw_img.shape[1]
@@ -225,16 +248,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
 
 
-    def butterworth_filter(self):
+    def butterworth_filter(self, type="low"):
         dft_shift, spectrum = self.fft_cv2(self.raw_img)
 
         ##### FIXME mask type用uint8就不行..........
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=np.uint8)
-        print(mask[0][0])
-        print(mask.dtype)
+        # mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=np.uint8)
+        # print(mask[0][0])
+        # print(mask.dtype)
         mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
-        print(mask[0][0])
-        print(mask.dtype)
+        # print(mask[0][0])
+        # print(mask.dtype)
 
         n = 2
         d0 = self.ui.horizontalSlider_cutoff.value()
@@ -242,39 +265,75 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         for i in range(mask.shape[0]):
             for j in range(mask.shape[1]):
-                denominator = 1 + ((math.sqrt((i - ci)**2 + (j - cj)**2) / d0) ** (2*n))
-                mask[i, j] = 1 / denominator
-        dft_shift = dft_shift * mask
+                if type == "low":
+                    denominator = 1 + ((math.sqrt((i - ci)**2 + (j - cj)**2) / d0) ** (2*n))
+                elif type == "high":
+                    denominator = 1 + (d0 / ((math.sqrt((i - ci)**2 + (j - cj)**2)) + 0.00000000001) ** (2*n)) # 避免分母為0
 
+                mask[i, j] = 1 / denominator
+
+        dft_shift = dft_shift * mask
         # img_back = np.abs(self.ifft_cv2(dft_shift))
         img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
         qimg = self.get_qimg(img_back)
         self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
 
 
-    #巴特沃斯低通滤波器
-    def Butterworth_LowPass_Filter (image, d, n, s1):
-        # Butterworth低通滤波器
-        f = np.fft.fft2(image)
-        fshift = np.fft.fftshift(f)
+    def gaussian_filter(self, type="low"):
+        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
+        d0 = self.ui.horizontalSlider_cutoff.value()
+        ci, cj = mask.shape[0]//2, mask.shape[1]//2
 
-        def make_transform_matrix(d):
-            transform_matrix = np.zeros(image.shape)
-            center_point = tuple (map (lambda x: (x - 1) / 2, s1.shape))
-            for i in range(transform_matrix.shape[0]):
-                for j in range(transform_matrix.shape[1]):
-                    def cal_distance (pa, pb):
-                        from math import sqrt
-                        dis = sqrt((pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2)
-                        return dis
-                    dis = cal_distance (center_point, (i, j))
-                    transform_matrix[i, j] = 1 / (1 + (dis / d) ** (2 * n))
-                    return transform_matrix
+        for i in range(mask.shape[0]):
+            for j in range(mask.shape[1]):
+                if type == "low":
+                    power = -1 * ((math.sqrt((i - ci)**2 + (j - cj)**2) ** 2)) / (2 * (d0**2))
+                    mask[i, j] = math.exp(power)
+                elif type == "high":
+                    power = -1 * ((math.sqrt((i - ci)**2 + (j - cj)**2) ** 2)) / (2 * (d0**2))
+                    mask[i, j] = 1 - (math.exp(power))
 
-        d_matrix = make_transform_matrix(d)
-        new_img = np.abs(np.fft.ifft2(np.fft.ifftshift (fshift *  d_matrix)))
-        return new_img
+        dft_shift = dft_shift * mask
+        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
 
-    def gaussian_filter(self):
-        pass
 
+    # https://zhuanlan.zhihu.com/p/515812634
+    def homomorphic_filter(self):
+        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
+        ci, cj = mask.shape[0]//2, mask.shape[1]//2
+        gh = self.ui.horizontalSlider_gh.value()
+        gl = self.ui.horizontalSlider_gl.value()
+        d0 = self.ui.horizontalSlider_d0.value()
+        c = self.ui.horizontalSlider_c.value()
+
+        for i in range(mask.shape[0]):
+            for j in range(mask.shape[1]):
+                d = math.sqrt((i - ci)**2 + (j - cj)**2)
+                power = (-c * (d ** 2 / d0))
+                mask[i, j] = (gh - gl) * (1 - math.exp(power)) + gl
+
+        dft_shift = dft_shift * mask
+        # img_back = np.abs(self.ifft_cv2(dft_shift))
+        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_6.setPixmap(QPixmap.fromImage(qimg))
+
+
+    def part4(self, noise=False):
+        self.ui.textEdit__blur_type.setText("Type: "+str(self.ui.comboBox_blur.currentText()))
+        a, b, T = 0.1, 0.1, 1
+        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
+
+        # blur
+        for u in range(mask.shape[0]):
+            for v in range(mask.shape[1]):
+                denominator = math.pi * (u*a + v*b)
+                power = -1j * math.pi * (u*a + v*b)
+                # print(u,v)
+                mask[u,v] = (T / (denominator+ 0.00000000001)) * math.sin(math.pi * (u*a + v*b)) * cmath.exp(power) # 避免分母0
+                print(mask)
