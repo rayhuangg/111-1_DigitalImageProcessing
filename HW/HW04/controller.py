@@ -18,7 +18,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     # TODO
     def setup_control(self):
-        # self.ui.tabWidget.setCurrentIndex(0) # 設定從第一分頁開始顯示
+        self.ui.tabWidget.setCurrentIndex(0) # 設定從第一分頁開始顯示
         self.ui.button_file.clicked.connect(self.open_file)
         self.ui.button_file_2.clicked.connect(self.open_file)
         self.ui.button_file_3.clicked.connect(self.open_file)
@@ -117,6 +117,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.img_name, _ = QFileDialog.getOpenFileName(self,
                 "Open file",
                 "./")   # start path
+        # if self.img_name is None:
+        #     return
         self.img_name = self.img_name.split("/")[-1] # 取檔案路徑最後一個分割，即為檔名
         self.raw_img = cv2.imread(self.img_name, 0) # gray
 
@@ -177,32 +179,47 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
         # 將spectrum平移到中心
         dft_shift = np.fft.fftshift(dft)
-        # 將spectrum複數轉換為 0-255 區間
-        result_log = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
+        # 將spectrum複數空間轉換為 0-255 區間
+        magnitude_spectrum = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
 
-        return dft_shift, result_log
+        return dft_shift, magnitude_spectrum
+
+
+    # def ifft_cv2(self, dft_shift):
+    #     idft_shift = np.fft.ifftshift(dft_shift)
+    #     img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE )
+    #     # img_back = cv2.magnitude(img_back[:, :, 0], img_back[:, :, 1])
+
+    #     return img_back
 
 
     def ifft_cv2(self, dft_shift):
+        # 反向平移
         idft_shift = np.fft.ifftshift(dft_shift)
-        img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
+        if idft_shift.dtype ==  "complex128":
+            img_back = np.fft.ifft2(idft_shift)
 
-        return img_back
+            return img_back.real
+
+        else:
+            img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE)
+            img_back = cv2.magnitude(img_back[:,:,0], img_back[:,:,1])
+            return img_back
+
 
 
     def part1_fft(self):
         start = time.process_time()
 
-        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
         img_back = self.ifft_cv2(dft_shift)
 
-        qimg = self.get_qimg(shift_log)
+        qimg = self.get_qimg(magnitude_spectrum)
         self.ui.label_img_2.setPixmap(QPixmap.fromImage(qimg))
         qimg = self.get_qimg(img_back)
         self.ui.label_img_7.setPixmap(QPixmap.fromImage(qimg))
 
         end = time.process_time()
-        # print(f"Process time: {(end-start):0.10f} s")
         self.ui.textEdit.setText(f"Process time: {(end-start):0.10f} s")
 
 
@@ -224,7 +241,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def idal_filter(self, type="low"):
         # https://blog.csdn.net/qq_38463737/article/details/118682500
-        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
         # 設置截止頻率
         d0 = self.ui.horizontalSlider_cutoff.value()
         rows, cols = self.raw_img.shape[0], self.raw_img.shape[1]
@@ -235,13 +252,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             mask[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 1 # 設定mask
             # mask和頻譜圖像相乘濾波
             dft_shift = dft_shift * mask
-            print(mask)
         elif type == "high":
             # mask = np.ones((rows, cols, 2), np.uint8)
             # mask[crow-cut_off : crow+cut_off, ccol-cut_off : ccol+cut_off] = 0 # 設定mask
             dft_shift[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 0
 
-        ## FIXME 為何要加上abs/clip才不會出現奇怪線條還未知
+        ## FIXME 為何要加上abs/clip才不會出現奇怪黑白色塊還未知
         # img_back = np.abs(self.ifft_cv2(dft_shift))
         img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
         qimg = self.get_qimg(img_back)
@@ -280,7 +296,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
 
     def gaussian_filter(self, type="low"):
-        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
         mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
         d0 = self.ui.horizontalSlider_cutoff.value()
         ci, cj = mask.shape[0]//2, mask.shape[1]//2
@@ -302,7 +318,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     # https://zhuanlan.zhihu.com/p/515812634
     def homomorphic_filter(self):
-        dft_shift, shift_log = self.fft_cv2(self.raw_img)
+        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
         mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
         ci, cj = mask.shape[0]//2, mask.shape[1]//2
         gh = self.ui.horizontalSlider_gh.value()
@@ -326,14 +342,19 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def part4(self, noise=False):
         self.ui.textEdit__blur_type.setText("Type: "+str(self.ui.comboBox_blur.currentText()))
         a, b, T = 0.1, 0.1, 1
-        dft_shift, shift_log = self.fft_cv2(self.raw_img)
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
+        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
+        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=complex) # 設定複數形式
 
         # blur
         for u in range(mask.shape[0]):
             for v in range(mask.shape[1]):
                 denominator = math.pi * (u*a + v*b)
                 power = -1j * math.pi * (u*a + v*b)
-                # print(u,v)
                 mask[u,v] = (T / (denominator+ 0.00000000001)) * math.sin(math.pi * (u*a + v*b)) * cmath.exp(power) # 避免分母0
-                print(mask)
+
+        dft_shift = dft_shift * mask
+        # img_back = (self.ifft_cv2(dft_shift))
+        img_back = np.abs(self.ifft_cv2(dft_shift))
+        # img_back = self.ifft_cv2(dft_shift)
+        qimg = self.get_qimg(img_back)
+        self.ui.label_img_9.setPixmap(QPixmap.fromImage(qimg))

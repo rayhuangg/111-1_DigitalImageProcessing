@@ -29,25 +29,20 @@ class test_qt:
         return result1
 
     def test(self):
-        src = cv2.imread("library(854_480).jpg", 0)
-        print(src.shape)
+        img = cv2.imread('C1HW04_IMG01_2022.jpg',0)
+        # f = np.fft.fft2(img)
+        f = cv2.dft(np.float32(img), flags=cv2.DFT_REAL_OUTPUT)
 
-        start = time.process_time()
-        # 將影像進行float轉換才能進行dft
-        result = cv2.dft(np.float32(src), flags=cv2.DFT_COMPLEX_OUTPUT)
-        # 將spectrum平移到中心
-        dft_shift = np.fft.fftshift(result)
-        print(dft_shift.shape)
-        s1 = np.log(np.abs(dft_shift))
-        center_point = tuple (map (lambda x: (x - 1) / 2, s1.shape))
+        fshift = np.fft.fftshift(f)
+        f_ishift = np.fft.ifftshift(fshift)
+        print(f_ishift.shape)
+        d_shift = np.array(np.dstack([f_ishift.real,f_ishift.imag]))
+        print(d_shift.shape)
+        img_back = cv2.idft(d_shift)
+        img = cv2.magnitude(img_back[:,:,0],img_back[:,:,1])
 
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), np.uint8)
-        # a = np.log(np.abs(dft_shift))
-        ci, cj = mask.shape[0]//2, mask.shape[1]//2
-        print(ci,cj)
-
-        print(center_point)
-
+        plt.imshow(img)
+        plt.show()
     def main(self):
         self.test()
 

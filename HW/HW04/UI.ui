@@ -939,6 +939,11 @@
         </property>
         <item>
          <property name="text">
+          <string>-- choose blur method --</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Blur image</string>
          </property>
         </item>
