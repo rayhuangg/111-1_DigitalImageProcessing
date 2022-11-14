@@ -23,8 +23,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_file_2.clicked.connect(self.open_file)
         self.ui.button_file_3.clicked.connect(self.open_file)
         self.ui.button_file_4.clicked.connect(self.open_file)
-        self.ui.button_fft.clicked.connect(self.part1_fft)
-        self.ui.button_go.clicked.connect(self.part2_select_filter)
+        self.ui.button_fft.clicked.connect(self.part1_color_model)
+        self.ui.button_go.clicked.connect(self.part1_select_filter)
 
         self.ui.horizontalSlider_cutoff.valueChanged.connect(self.slider_show)
         self.ui.horizontalSlider_c.valueChanged.connect(self.slider_show)
@@ -36,6 +36,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.horizontalSlider_gh.valueChanged.connect(self.homomorphic_filter)
         self.ui.horizontalSlider_gl.valueChanged.connect(self.homomorphic_filter)
         self.ui.comboBox_blur.currentTextChanged.connect(self.part4)
+
 
     # plot histogram
     def plot_histogram(self, img):
@@ -53,7 +54,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def get_qimg(self, img, width=200, height=150):
         if type(img) == str: # 路徑的話就做imread,否則直接使用
-            img = cv2.imread(img, 0) # gray
+            img = cv2.imread(img,    0) # gray
         elif type(img) == np.ndarray:
              img = img
 
@@ -89,13 +90,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     out[i, j] = img[x, y]
 
         return out
-
-
-    def set_filter(self, size=3):
-        filter =  np.array([[1,1,1],
-                            [1,1,1],
-                            [1,1,1]]) / 9
-        return filter
 
 
     def iterate_regions(self, image):
@@ -145,25 +139,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.label_d0.setText(str(self.ui.horizontalSlider_d0.value()))
 
 
-    # def forward(self):
-        # '''
-        # Performs a forward pass of the conv layer using the given input.
-        # - input is a 2d numpy array
-        # '''
-        # input = self.img
-        # h, w = input.shape
-        # # output = np.zeros((h - 2, w - 2, self.num_filters))
-        # output = np.zeros((h-2, w-2))
-        # self.filter = self.set_filter()
-
-        # for im_region, i, j in self.iterate_regions(input):
-        #     output[i, j] = np.sum(im_region * self.filter)
-        #     output = np.clip(np.uint8(output), 0, 255)
-
-        # self.qimg = self.get_qimg(self.img_name)
-        # self.ui.label_img_2.setPixmap(QPixmap.fromImage(self.qimg))
-
-
     def grayscale(self, img):
         B = img[:,:,0]
         G = img[:,:,1]
@@ -171,45 +146,23 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         return np.array((R/3 + G/3 + B/3), dtype=np.uint8)
 
 
-    def fft_cv2(self, img):
-        if len(img.shape) == 3:
-            img = self.grayscale(img)
-
-        # 將影像進行float轉換才能進行dft
-        dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
-        # 將spectrum平移到中心
-        dft_shift = np.fft.fftshift(dft)
-        # 將spectrum複數空間轉換為 0-255 區間
-        magnitude_spectrum = 20 * np.log(cv2.magnitude(x=dft_shift[:,:,0], y=dft_shift[:,:,1]))
-
-        return dft_shift, magnitude_spectrum
+    def get_split_channel(self, img):
+        return img[:,:,0], img[:,:,2], img[:,:,2]
 
 
-    # def ifft_cv2(self, dft_shift):
-    #     idft_shift = np.fft.ifftshift(dft_shift)
-    #     img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE )
-    #     # img_back = cv2.magnitude(img_back[:, :, 0], img_back[:, :, 1])
+    def part1_color_model(self):
 
-    #     return img_back
+        if (self.ui.comboBox_color_model.currentText()) == "CMY":
+            self.idal_filter(type="low")
+        elif (self.ui.comboBox_color_model.currentText()) == "HSI":
+            self.idal_filter(type="high")
+        elif (self.ui.comboBox_color_model.currentText()) == "XYZ":
+            self.butterworth_filter(type="low")
+        elif (self.ui.comboBox_color_model.currentText()) == "Lab":
+            self.butterworth_filter(type="high")
+        elif (self.ui.comboBox_color_model.currentText()) == "YUV":
+            self.gaussian_filter(type="low")
 
-
-    def ifft_cv2(self, dft_shift):
-        # 反向平移
-        idft_shift = np.fft.ifftshift(dft_shift)
-        if idft_shift.dtype ==  "complex128":
-            img_back = np.fft.ifft2(idft_shift)
-
-            return img_back.real
-
-        else:
-            img_back = cv2.idft(idft_shift, flags=cv2.DFT_SCALE)
-            img_back = cv2.magnitude(img_back[:,:,0], img_back[:,:,1])
-            return img_back
-
-
-
-    def part1_fft(self):
-        start = time.process_time()
 
         dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
         img_back = self.ifft_cv2(dft_shift)
@@ -219,142 +172,80 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         qimg = self.get_qimg(img_back)
         self.ui.label_img_7.setPixmap(QPixmap.fromImage(qimg))
 
-        end = time.process_time()
-        self.ui.textEdit.setText(f"Process time: {(end-start):0.10f} s")
+
+    def rgb2cmy(self):
+        img = self.raw_img
+        b, g, r = self.get_split_channel(img)
+        # normalization [0,1]
+        r = r / 255.0
+        g = g / 255.0
+        b = b / 255.0
+        # tranform to cmy
+        c = 1 - r
+        m = 1 - g
+        y = 1 - b
+        result = cv2.merge((c, m, y))
 
 
-    # 選擇要用哪個filter
-    def part2_select_filter(self):
-        if (self.ui.comboBox_filter.currentText()) == "Ideal lowpass filter":
-            self.idal_filter(type="low")
-        elif (self.ui.comboBox_filter.currentText()) == "Ideal highpass filter":
-            self.idal_filter(type="high")
-        elif (self.ui.comboBox_filter.currentText()) == "Butterworth lowpass filter":
-            self.butterworth_filter(type="low")
-        elif (self.ui.comboBox_filter.currentText()) == "Butterworth highpass filter":
-            self.butterworth_filter(type="high")
-        elif (self.ui.comboBox_filter.currentText()) == "Gaussian lowpass filter":
-            self.gaussian_filter(type="low")
-        elif (self.ui.comboBox_filter.currentText()) == "Gaussian highpass filter":
-            self.gaussian_filter(type="high")
+    def rgb2hsi(self):
+        img = self.raw_img
+        bgr = np.float32(img)/255 # convert to float type
+
+        # Separate color channels
+        b, g, r = self.get_split_channel(np.float32(img) / 255)
+        # Separate color channels
+        blue = bgr[:,:,0]
+        green = bgr[:,:,1]
+        red = bgr[:,:,2]
+
+        # Calculate Intensity
+        def calc_intensity(red, blue, green):
+            return np.divide(blue + green + red, 3)
+
+        # Calculate Saturation
+        def calc_saturation(red, blue, green):
+            minimum = np.minimum(np.minimum(red, green), blue)
+            saturation = 1 - (3 / (red + green + blue + 0.001) * minimum)
+
+            return saturation
+
+        # Calculate Hue
+        def calc_hue(red, blue, green):
+            hue = np.copy(red)
+
+            for i in range(0, blue.shape[0]):
+                for j in range(0, blue.shape[1]):
+                    hue[i][j] = 0.5 * ((red[i][j] - green[i][j]) + (red[i][j] - blue[i][j])) / \
+                                math.sqrt((red[i][j] - green[i][j])**2 +
+                                        ((red[i][j] - blue[i][j]) * (green[i][j] - blue[i][j])))
+                    hue[i][j] = math.acos(hue[i][j])
+
+                    if blue[i][j] <= green[i][j]:
+                        hue[i][j] = hue[i][j]
+                    else:
+                        hue[i][j] = ((360 * math.pi) / 180.0) - hue[i][j]
+
+            return hue
+
+        # Merge channels into picture and return image
+        hsi = cv2.merge((calc_hue(r, b, g), calc_saturation(r, b, g), calc_intensity(r, b, g)))
+        # hsi = cv2.merge((calc_hue(red, blue, green), calc_saturation(red, blue, green), calc_intensity(red, blue, green)))
 
 
-    def idal_filter(self, type="low"):
-        # https://blog.csdn.net/qq_38463737/article/details/118682500
-        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
-        # 設置截止頻率
-        d0 = self.ui.horizontalSlider_cutoff.value()
-        rows, cols = self.raw_img.shape[0], self.raw_img.shape[1]
-        crow, ccol = int(rows/2), int(cols/2) # mask中心位置
+    # https://www.jianshu.com/p/c34a313e12eb
+    def rgb2xyz(self):
+        img = self.raw_img
+        m = np.array([[0.412453, 0.357580, 0.180423],
+                      [0.212671, 0.715160, 0.072169],
+                      [0.019334, 0.119193, 0.950227]])
 
-        if type == "low":
-            mask = np.zeros((rows, cols, 2), np.uint8)
-            mask[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 1 # 設定mask
-            # mask和頻譜圖像相乘濾波
-            dft_shift = dft_shift * mask
-        elif type == "high":
-            # mask = np.ones((rows, cols, 2), np.uint8)
-            # mask[crow-cut_off : crow+cut_off, ccol-cut_off : ccol+cut_off] = 0 # 設定mask
-            dft_shift[crow-d0 : crow+d0, ccol-d0 : ccol+d0] = 0
+        b, g, r = self.get_split_channel(img)
+        rgb = np.array([r, g, b])
+        # rgb = rgb / 255.0
+        # RGB = np.array([gamma(c) for c in rgb])
+        XYZ = np.dot(m, rgb.T) / 255
+        # XYZ = XYZ / 255.0
+        result = (XYZ[0] / 0.95047, XYZ[1] / 1.0, XYZ[2] / 1.08883)
 
-        ## FIXME 為何要加上abs/clip才不會出現奇怪黑白色塊還未知
-        # img_back = np.abs(self.ifft_cv2(dft_shift))
-        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
-        qimg = self.get_qimg(img_back)
-        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
-
-
-    def butterworth_filter(self, type="low"):
-        dft_shift, spectrum = self.fft_cv2(self.raw_img)
-
-        ##### FIXME mask type用uint8就不行..........
-        # mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=np.uint8)
-        # print(mask[0][0])
-        # print(mask.dtype)
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
-        # print(mask[0][0])
-        # print(mask.dtype)
-
-        n = 2
-        d0 = self.ui.horizontalSlider_cutoff.value()
-        ci, cj = mask.shape[0]//2, mask.shape[1]//2
-
-        for i in range(mask.shape[0]):
-            for j in range(mask.shape[1]):
-                if type == "low":
-                    denominator = 1 + ((math.sqrt((i - ci)**2 + (j - cj)**2) / d0) ** (2*n))
-                elif type == "high":
-                    denominator = 1 + (d0 / ((math.sqrt((i - ci)**2 + (j - cj)**2)) + 0.00000000001) ** (2*n)) # 避免分母為0
-
-                mask[i, j] = 1 / denominator
-
-        dft_shift = dft_shift * mask
-        # img_back = np.abs(self.ifft_cv2(dft_shift))
-        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
-        qimg = self.get_qimg(img_back)
-        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
-
-
-    def gaussian_filter(self, type="low"):
-        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
-        d0 = self.ui.horizontalSlider_cutoff.value()
-        ci, cj = mask.shape[0]//2, mask.shape[1]//2
-
-        for i in range(mask.shape[0]):
-            for j in range(mask.shape[1]):
-                if type == "low":
-                    power = -1 * ((math.sqrt((i - ci)**2 + (j - cj)**2) ** 2)) / (2 * (d0**2))
-                    mask[i, j] = math.exp(power)
-                elif type == "high":
-                    power = -1 * ((math.sqrt((i - ci)**2 + (j - cj)**2) ** 2)) / (2 * (d0**2))
-                    mask[i, j] = 1 - (math.exp(power))
-
-        dft_shift = dft_shift * mask
-        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
-        qimg = self.get_qimg(img_back)
-        self.ui.label_img_4.setPixmap(QPixmap.fromImage(qimg))
-
-
-    # https://zhuanlan.zhihu.com/p/515812634
-    def homomorphic_filter(self):
-        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2))
-        ci, cj = mask.shape[0]//2, mask.shape[1]//2
-        gh = self.ui.horizontalSlider_gh.value()
-        gl = self.ui.horizontalSlider_gl.value()
-        d0 = self.ui.horizontalSlider_d0.value()
-        c = self.ui.horizontalSlider_c.value()
-
-        for i in range(mask.shape[0]):
-            for j in range(mask.shape[1]):
-                d = math.sqrt((i - ci)**2 + (j - cj)**2)
-                power = (-c * (d ** 2 / d0))
-                mask[i, j] = (gh - gl) * (1 - math.exp(power)) + gl
-
-        dft_shift = dft_shift * mask
-        # img_back = np.abs(self.ifft_cv2(dft_shift))
-        img_back = np.clip(self.ifft_cv2(dft_shift), 0, 255)
-        qimg = self.get_qimg(img_back)
-        self.ui.label_img_6.setPixmap(QPixmap.fromImage(qimg))
-
-
-    def part4(self, noise=False):
-        self.ui.textEdit__blur_type.setText("Type: "+str(self.ui.comboBox_blur.currentText()))
-        a, b, T = 0.1, 0.1, 1
-        dft_shift, magnitude_spectrum = self.fft_cv2(self.raw_img)
-        mask = np.zeros((dft_shift.shape[0], dft_shift.shape[1], 2), dtype=complex) # 設定複數形式
-
-        # blur
-        for u in range(mask.shape[0]):
-            for v in range(mask.shape[1]):
-                denominator = math.pi * (u*a + v*b)
-                power = -1j * math.pi * (u*a + v*b)
-                mask[u,v] = (T / (denominator+ 0.00000000001)) * math.sin(math.pi * (u*a + v*b)) * cmath.exp(power) # 避免分母0
-
-        dft_shift = dft_shift * mask
-        # img_back = (self.ifft_cv2(dft_shift))
-        img_back = np.abs(self.ifft_cv2(dft_shift))
-        # img_back = self.ifft_cv2(dft_shift)
-        qimg = self.get_qimg(img_back)
-        self.ui.label_img_9.setPixmap(QPixmap.fromImage(qimg))
+        plt.imshow(XYZ)
+        plt.show()

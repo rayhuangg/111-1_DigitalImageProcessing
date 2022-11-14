@@ -15,11 +15,14 @@ class test_qt:
         self.raw_img = cv2.imread("HW05-Part 3-02.bmp")
         self.raw_img = cv2.imread("lena.jpg")
 
+
     def get_split_channel(self, img):
         return img[:,:,0], img[:,:,2], img[:,:,2]
 
+
     def showrgb(self):
         img = self.raw_img
+
 
     def rgb2cmy(self):
         img = self.raw_img
