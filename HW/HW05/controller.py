@@ -22,8 +22,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.button_file.clicked.connect(self.open_file)
         self.ui.button_file_2.clicked.connect(self.open_file)
         self.ui.button_file_3.clicked.connect(self.open_file)
-        self.ui.button_file_4.clicked.connect(self.open_file)
-        self.ui.button_fft.clicked.connect(self.part1_color_model)
+        # self.ui.button_file_4.clicked.connect(self.open_file)
+        # self.ui.button_fft.clicked.connect(self.part1_color_model)
         self.ui.button_go.clicked.connect(self.part1_select_filter)
 
         self.ui.horizontalSlider_cutoff.valueChanged.connect(self.slider_show)
@@ -249,3 +249,26 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         plt.imshow(XYZ)
         plt.show()
+
+
+    def part3(self):
+        img = self.raw_img
+        img = self.grayscale(img)
+
+        #change img(2D) to 1D
+        img1 = img.reshape((img.shape[0]*img.shape[1],1))
+        img1 = np.float32(img1)
+
+        #define criteria = (type,max_iter,epsilon)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,10,1.0)
+
+        #set flags: hou to choose the initial center
+        #---cv2.KMEANS_PP_CENTERS ; cv2.KMEANS_RANDOM_CENTERS
+        flags = cv2.KMEANS_RANDOM_CENTERS
+        # apply kmenas
+        compactness,labels,centers = cv2.kmeans(img1,4,None,criteria,10,flags)
+
+        img2 = labels.reshape((img.shape[0],img.shape[1]))
+
+        qimg = self.get_qimg(img2)
+        self.ui.label_img_5.setPixmap(QPixmap.fromImage(qimg))

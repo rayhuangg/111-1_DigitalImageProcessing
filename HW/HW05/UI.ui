@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideLeft</enum>
@@ -135,8 +135,8 @@
          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'PMingLiU'; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;model: RGB&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'PMingLiU';&quot;&gt;model: RGB&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
        <widget class="QTextEdit" name="textEdit_model_type_2">
@@ -152,8 +152,8 @@ p, li { white-space: pre-wrap; }
          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'PMingLiU'; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;model:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'PMingLiU';&quot;&gt;model:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </widget>
@@ -196,7 +196,7 @@ p, li { white-space: pre-wrap; }
          <string>grayscale</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QLabel" name="label_img_3">
@@ -234,7 +234,7 @@ p, li { white-space: pre-wrap; }
          <string>pseudo-color</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QPushButton" name="button_file_2">
@@ -317,10 +317,10 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>1. Cut-off Frequency</string>
+         <string>1. </string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QPushButton" name="button_go">
@@ -360,7 +360,7 @@ p, li { white-space: pre-wrap; }
          <string>3.</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QLabel" name="label_threshold_14">
@@ -382,7 +382,7 @@ p, li { white-space: pre-wrap; }
          <string>color bar</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
       </widget>
@@ -408,28 +408,6 @@ p, li { white-space: pre-wrap; }
          <string>choose img</string>
         </property>
        </widget>
-       <widget class="QLabel" name="label_threshold_4">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>190</y>
-          <width>141</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Gamma_H</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_brightness">
         <property name="geometry">
          <rect>
@@ -448,115 +426,10 @@ p, li { white-space: pre-wrap; }
          <string/>
         </property>
        </widget>
-       <widget class="QSlider" name="horizontalSlider_gh">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>250</y>
-          <width>160</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>20</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_gh">
-        <property name="geometry">
-         <rect>
-          <x>220</x>
-          <y>250</y>
-          <width>47</width>
-          <height>12</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>value</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_gl">
-        <property name="geometry">
-         <rect>
-          <x>220</x>
-          <y>360</y>
-          <width>47</width>
-          <height>12</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>value</string>
-        </property>
-       </widget>
-       <widget class="QSlider" name="horizontalSlider_gl">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>360</y>
-          <width>160</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_threshold_5">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>300</y>
-          <width>141</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Gamma_L</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_threshold_7">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>270</x>
           <y>30</y>
           <width>101</width>
           <height>51</height>
@@ -572,13 +445,13 @@ p, li { white-space: pre-wrap; }
          <string>Original</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QLabel" name="label_img_5">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>270</x>
           <y>80</y>
           <width>200</width>
           <height>150</height>
@@ -599,7 +472,7 @@ p, li { white-space: pre-wrap; }
        <widget class="QLabel" name="label_img_6">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>270</x>
           <y>310</y>
           <width>200</width>
           <height>150</height>
@@ -620,7 +493,7 @@ p, li { white-space: pre-wrap; }
        <widget class="QLabel" name="label_threshold_8">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>270</x>
           <y>260</y>
           <width>141</width>
           <height>51</height>
@@ -633,10 +506,10 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>homomorphic</string>
+         <string>Kmeans</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
        <widget class="QLabel" name="label_threshold_15">
@@ -658,7 +531,7 @@ p, li { white-space: pre-wrap; }
          <string>K-means</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
+         <enum>Qt::PlainText</enum>
         </property>
        </widget>
       </widget>
@@ -672,7 +545,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
