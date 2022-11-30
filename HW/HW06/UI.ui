@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>801</width>
     <height>606</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideLeft</enum>
@@ -64,51 +64,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QToolButton" name="toolButton">
-        <property name="geometry">
-         <rect>
-          <x>240</x>
-          <y>490</y>
-          <width>22</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="arrowType">
-         <enum>Qt::RightArrow</enum>
-        </property>
-       </widget>
-       <widget class="QToolButton" name="toolButton_2">
-        <property name="geometry">
-         <rect>
-          <x>550</x>
-          <y>490</y>
-          <width>22</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="arrowType">
-         <enum>Qt::RightArrow</enum>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="textEdit">
-        <property name="geometry">
-         <rect>
-          <x>300</x>
-          <y>470</y>
-          <width>211</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="tabletTracking">
-         <bool>false</bool>
         </property>
        </widget>
        <widget class="QPushButton" name="button_trapezoidal">
@@ -231,91 +186,59 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
+       <widget class="QLabel" name="label_threshold_4">
+        <property name="geometry">
+         <rect>
+          <x>410</x>
+          <y>130</y>
+          <width>21</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>X</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::MarkdownText</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_threshold_5">
+        <property name="geometry">
+         <rect>
+          <x>410</x>
+          <y>440</y>
+          <width>21</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>X</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::MarkdownText</enum>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
         <string>Part2</string>
        </attribute>
-       <widget class="QLabel" name="label_img_4">
-        <property name="geometry">
-         <rect>
-          <x>430</x>
-          <y>250</y>
-          <width>200</width>
-          <height>150</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>result</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_threshold_2">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>180</y>
-          <width>101</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Original</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_img_3">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>250</y>
-          <width>200</width>
-          <height>150</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>img</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_threshold_3">
-        <property name="geometry">
-         <rect>
-          <x>430</x>
-          <y>180</y>
-          <width>141</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>After filter</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
        <widget class="QPushButton" name="button_file_2">
         <property name="geometry">
          <rect>
-          <x>20</x>
+          <x>30</x>
           <y>50</y>
           <width>111</width>
           <height>31</height>
@@ -330,171 +253,23 @@
          <string>choose img</string>
         </property>
        </widget>
-       <widget class="QLabel" name="label_cutoff">
-        <property name="geometry">
-         <rect>
-          <x>370</x>
-          <y>100</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>value</string>
-        </property>
-       </widget>
-       <widget class="QSlider" name="horizontalSlider_cutoff">
-        <property name="geometry">
-         <rect>
-          <x>190</x>
-          <y>100</y>
-          <width>160</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>50</number>
-        </property>
-        <property name="value">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_threshold_9">
         <property name="geometry">
          <rect>
-          <x>170</x>
-          <y>40</y>
-          <width>231</width>
-          <height>51</height>
+          <x>60</x>
+          <y>150</y>
+          <width>681</width>
+          <height>161</height>
          </rect>
         </property>
         <property name="font">
          <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
+          <family>Kristen ITC</family>
+          <pointsize>28</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>1. Cut-off Frequency</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_threshold_10">
-        <property name="geometry">
-         <rect>
-          <x>470</x>
-          <y>40</y>
-          <width>171</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>2.filter</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::MarkdownText</enum>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="comboBox_filter">
-        <property name="geometry">
-         <rect>
-          <x>470</x>
-          <y>100</y>
-          <width>191</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <item>
-         <property name="text">
-          <string>Ideal lowpass filter</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Butterworth lowpass filter</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Gaussian lowpass filter</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Ideal highpass filter</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Butterworth highpass filter</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Gaussian highpass filter</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QPushButton" name="button_go">
-        <property name="geometry">
-         <rect>
-          <x>680</x>
-          <y>70</y>
-          <width>51</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>GO</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_threshold_11">
-        <property name="geometry">
-         <rect>
-          <x>650</x>
-          <y>40</y>
-          <width>171</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>16</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>3.</string>
+         <string>I haven't finished this part yet. Sorry.</string>
         </property>
         <property name="textFormat">
          <enum>Qt::MarkdownText</enum>
@@ -508,8 +283,8 @@
        <widget class="QPushButton" name="button_file_3">
         <property name="geometry">
          <rect>
-          <x>60</x>
-          <y>30</y>
+          <x>30</x>
+          <y>20</y>
           <width>111</width>
           <height>31</height>
          </rect>
@@ -544,8 +319,8 @@
        <widget class="QLabel" name="label_threshold_7">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>30</y>
+          <x>40</x>
+          <y>110</y>
           <width>101</width>
           <height>51</height>
          </rect>
@@ -566,10 +341,10 @@
        <widget class="QLabel" name="label_img_5">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>80</y>
+          <x>30</x>
+          <y>180</y>
           <width>200</width>
-          <height>150</height>
+          <height>200</height>
          </rect>
         </property>
         <property name="font">
@@ -587,10 +362,10 @@
        <widget class="QLabel" name="label_img_6">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>310</y>
+          <x>300</x>
+          <y>60</y>
           <width>200</width>
-          <height>150</height>
+          <height>200</height>
          </rect>
         </property>
         <property name="font">
@@ -608,7 +383,63 @@
        <widget class="QLabel" name="label_threshold_8">
         <property name="geometry">
          <rect>
-          <x>210</x>
+          <x>300</x>
+          <y>0</y>
+          <width>161</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Edge</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::MarkdownText</enum>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="textEdit_2">
+        <property name="geometry">
+         <rect>
+          <x>520</x>
+          <y>310</y>
+          <width>201</width>
+          <height>101</height>
+         </rect>
+        </property>
+        <property name="tabletTracking">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_img_9">
+        <property name="geometry">
+         <rect>
+          <x>290</x>
+          <y>310</y>
+          <width>200</width>
+          <height>200</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>img</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_threshold_12">
+        <property name="geometry">
+         <rect>
+          <x>290</x>
           <y>260</y>
           <width>161</width>
           <height>51</height>
@@ -627,19 +458,6 @@
          <enum>Qt::MarkdownText</enum>
         </property>
        </widget>
-       <widget class="QTextEdit" name="textEdit_2">
-        <property name="geometry">
-         <rect>
-          <x>480</x>
-          <y>80</y>
-          <width>211</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="tabletTracking">
-         <bool>false</bool>
-        </property>
-       </widget>
       </widget>
      </widget>
     </item>
@@ -650,7 +468,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>801</width>
      <height>21</height>
     </rect>
    </property>
